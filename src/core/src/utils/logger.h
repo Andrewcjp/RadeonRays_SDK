@@ -21,9 +21,9 @@ THE SOFTWARE.
 // clang-format off
 #include "utils/warning_push.h"
 #include "utils/warning_ignore_general.h"
-#include "spdlog/sinks/basic_file_sink.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
-#include "spdlog/spdlog.h"
+//#include "spdlog/sinks/basic_file_sink.h"
+//#include "spdlog/sinks/stdout_color_sinks.h"
+//#include "spdlog/spdlog.h"
 #include "radeonrays.h"
 #include "utils/warning_pop.h"
 // clang-format on
@@ -67,45 +67,52 @@ public:
 private:
     Logger()
     {
-        logger_ = spdlog::stdout_color_mt(LoggerName);
-#ifdef NDEBUG
-        logger_->set_level(spdlog::level::info);
-#else
-        logger_->set_level(spdlog::level::debug);
-#endif
+        /*   logger_ = spdlog::stdout_color_mt(LoggerName);
+   #ifdef NDEBUG
+           logger_->set_level(spdlog::level::info);
+   #else
+           logger_->set_level(spdlog::level::debug);
+   #endif*/
     }
-    ~Logger() { spdlog::shutdown(); }
-    std::shared_ptr<spdlog::logger> logger_;
+    ~Logger()
+    { /* spdlog::shutdown();*/
+    }
+    /*std::shared_ptr<spdlog::logger> logger_;*/
 };
 
 template <typename... Args>
 void Logger::Info(Args&&... args)
 {
-    logger_->info(std::forward<Args>(args)...);
+    printf("%s\n", args...);
+    // logger_->info(std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 void Logger::Warn(Args&&... args)
 {
-    logger_->warn(std::forward<Args>(args)...);
+    printf("%s\n", args...);
+    // logger_->warn(std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 void Logger::Error(Args&&... args)
 {
-    logger_->error(std::forward<Args>(args)...);
+    printf("%s\n", args...);
+    // logger_->error(std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 void Logger::Debug(Args&&... args)
 {
-    logger_->debug(std::forward<Args>(args)...);
+    printf("%s\n", args...);
+    // logger_->debug(std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 void Logger::Trace(Args&&... args)
 {
-    logger_->trace(std::forward<Args>(args)...);
+    printf("%s\n", args...);
+    // logger_->trace(std::forward<Args>(args)...);
 }
 
 }  // namespace rt

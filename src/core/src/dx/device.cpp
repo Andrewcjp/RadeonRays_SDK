@@ -184,7 +184,10 @@ void Device::InitializePools()
     temporary_uav_pool_.SetDeleteFn([](ID3D12Resource* uav) { uav->Release(); });
 }
 
-CommandStreamBase* Device::AllocateCommandStream() { return command_stream_pool_.AcquireObject(); }
+CommandStreamBase* Device::AllocateCommandStream() 
+{ 
+	return command_stream_pool_.AcquireObject(); 
+}
 
 void Device::ReleaseCommandStream(CommandStreamBase* command_stream_base)
 {
@@ -194,9 +197,11 @@ void Device::ReleaseCommandStream(CommandStreamBase* command_stream_base)
     command_stream->ClearTemporaryUAVs();
 
     // Reset allocators.
-    command_stream->GetAllocator()->Reset();
-    command_stream->Get()->Reset(command_stream->GetAllocator(), nullptr);
-
+    if (command_stream->GetAllocator() != nullptr)
+    {    
+		command_stream->GetAllocator()->Reset();
+		command_stream->Get()->Reset(command_stream->GetAllocator(), nullptr);
+	}
     // Release command stream back to the pool.
     command_stream_pool_.ReleaseObject(command_stream);
 }

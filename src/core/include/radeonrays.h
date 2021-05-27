@@ -36,6 +36,7 @@ THE SOFTWARE.
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string>
 
 struct _RRDevicePtr;
 struct _RREvent;
@@ -302,6 +303,16 @@ RR_API RRError rrSetLogLevel(RRLogLevel log_level);
  * @return Error in case of a failure, RRSuccess otherwise.
  */
 RR_API RRError rrSetLogFile(char const* filename);
+
+typedef void   PFN_LoggingCallback(std::string Msg, RRLogLevel log_level);
+/** @brief Set logging file
+ *
+ * By default all logs are shown to console
+ * @param context API context.
+ * @param preferred log file
+ * @return Error in case of a failure, RRSuccess otherwise.
+ */
+RR_API RRError rrSetLoggingCallback(PFN_LoggingCallback Callback);
 
 /** @brief Build or update a geometry.
  *

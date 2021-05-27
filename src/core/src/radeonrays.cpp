@@ -156,7 +156,6 @@ RRError rrSetLogFile(char const* filename)
     return RR_SUCCESS;
 }
 
-
 #if RR_ENABLE_DX12
 RRError rrCreateContextDX(uint32_t            api_version,
                           ID3D12Device*       d3d_device,
@@ -239,6 +238,12 @@ RRError rrDestroyContext(RRContext context)
     return RR_SUCCESS;
 }
 
+RRError rrSetLoggingCallback(PFN_LoggingCallback Callback)
+{
+    Logger::Get().SetLoggingCallback(Callback);
+    return RR_SUCCESS;
+}
+
 RRError rrCmdBuildGeometry(RRContext                   context,
                            RRBuildOperation            build_operation,
                            const RRGeometryBuildInput* build_input,
@@ -262,7 +267,8 @@ RRError rrCmdBuildGeometry(RRContext                   context,
     {
         switch (build_input->primitive_type)
         {
-        case RR_PRIMITIVE_TYPE_TRIANGLE_MESH: {
+        case RR_PRIMITIVE_TYPE_TRIANGLE_MESH:
+        {
             std::vector<TriangleMeshBuildInfo> build_info = GetTriangleMeshBuildInfo(*build_input);
 
             if (build_operation == RR_BUILD_OPERATION_BUILD)
@@ -272,8 +278,7 @@ RRError rrCmdBuildGeometry(RRContext                   context,
                                                     build_options,
                                                     reinterpret_cast<DevicePtrBase*>(temporary_buffer),
                                                     reinterpret_cast<DevicePtrBase*>(geometry_buffer));
-            }
-            else
+            } else
             {
                 ctx->intersector->UpdateTriangleMesh(rt_command_stream,
                                                      build_info,
@@ -283,7 +288,8 @@ RRError rrCmdBuildGeometry(RRContext                   context,
             }
             break;
         }
-        default: {
+        default:
+        {
             Logger::Get().Error("Build input type not supported");
             return RR_ERROR_NOT_IMPLEMENTED;
         }
@@ -317,7 +323,8 @@ RRError rrGetGeometryBuildMemoryRequirements(RRContext                   context
     {
         switch (build_input->primitive_type)
         {
-        case RR_PRIMITIVE_TYPE_TRIANGLE_MESH: {
+        case RR_PRIMITIVE_TYPE_TRIANGLE_MESH:
+        {
             std::vector<TriangleMeshBuildInfo> build_info = GetTriangleMeshBuildInfo(*build_input);
 
             PreBuildInfo info = ctx->intersector->GetTriangleMeshPreBuildInfo(build_info, build_options);
@@ -326,7 +333,8 @@ RRError rrGetGeometryBuildMemoryRequirements(RRContext                   context
             memory_requirements->temporary_update_buffer_size = info.update_scratch_size;
             break;
         }
-        default: {
+        default:
+        {
             Logger::Get().Error("Build input type not supported");
             return RR_ERROR_NOT_IMPLEMENTED;
         }
@@ -647,8 +655,17 @@ RRError rrGetCommandStreamFromD3D12CommandList(RRContext                  contex
     // TODO: Pool this allocation.
     try
     {
+#if 0
         *command_stream = reinterpret_cast<RRCommandStream>(
             new dx::CommandStream(reinterpret_cast<dx::Device&>(*ctx->device), command_list));
+#else
+
+        auto dx_command_stream = dynamic_cast<CommandStreamBackend<BackendType::kDx12>*>(
+            reinterpret_cast<dx::Device&>(*ctx->device).AllocateCommandStream());
+        dx_command_stream->SetAllocator(nullptr);
+        dx_command_stream->Set(command_list);
+        *command_stream = reinterpret_cast<RRCommandStream>(dx_command_stream);
+#endif
     } catch (std::exception& e)
     {
         Logger::Get().Error(e.what());

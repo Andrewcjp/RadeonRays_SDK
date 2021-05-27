@@ -24,7 +24,15 @@ void                    CommandStream::Set(ID3D12GraphicsCommandList* list) { co
 
 ID3D12CommandAllocator* CommandStream::GetAllocator() const { return command_allocator_.Get(); }
 
-void CommandStream::SetAllocator(ID3D12CommandAllocator* allocator) { command_allocator_ = allocator; }
+void CommandStream::SetAllocator(ID3D12CommandAllocator* allocator) { 
+	
+	if (command_allocator_ != nullptr)
+    {
+        command_allocator_->Release();
+	}
+	command_allocator_ = allocator; 
+
+}
 
 CommandStream::~CommandStream()
 {

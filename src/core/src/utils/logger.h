@@ -26,6 +26,7 @@ THE SOFTWARE.
 //#include "spdlog/spdlog.h"
 #include "radeonrays.h"
 #include "utils/warning_pop.h"
+#include <functional>
 // clang-format on
 
 namespace rt
@@ -64,7 +65,41 @@ public:
     void SetFileLogger(char const* filename);
     void SetConsoleLogger();
 
+    void SetLoggingCallback(PFN_LoggingCallback Callback);
+
 private:
+    void replaceAll(std::string& str, const std::string& from, const std::string& to)
+    {
+        if (from.empty())
+            return;
+        size_t start_pos = 0;
+        while ((start_pos = str.find(from, start_pos)) != std::string::npos)
+        {
+            str.replace(start_pos, from.length(), to);
+            start_pos += to.length();  // In case 'to' contains 'from', like replacing 'x' with 'yx'
+        }
+    }
+	std::string ConvertSPDLogFormatToC(std::string fmt)
+	{ 
+		replaceAll(fmt, "{}", "%d");
+		return fmt;
+	}
+    template <typename... Args>
+    std::string string_format(const std::string& format, Args... args)
+    {
+        std::string nformat      = ConvertSPDLogFormatToC(format);
+        size_t      size    = snprintf(nullptr, 0, nformat.c_str(), args...) + 1;  // Extra space for '\0'
+        if (size <= 0)
+        {
+            return "";
+        }
+        std::unique_ptr<char[]> buf(new char[size]);
+        snprintf(buf.get(), size, nformat.c_str(), args...);
+        return std::string(buf.get(), buf.get() + size - 1);  // We don't want the '\0' inside
+    }
+    template <typename... Args>
+    void                               LogMessage(RRLogLevel level, Args&&... args);
+    std::function<PFN_LoggingCallback> m_LogCallback = nullptr;
     Logger()
     {
         /*   logger_ = spdlog::stdout_color_mt(LoggerName);
@@ -81,37 +116,52 @@ private:
 };
 
 template <typename... Args>
+void Logger::LogMessage(RRLogLevel level, Args&&... args)
+{
+    std::string FinalOutput = string_format(args...);
+    if (Logger::Get().m_LogCallback != nullptr)
+    {        
+        Logger::Get().m_LogCallback(FinalOutput, level);
+    }
+	else
+    {
+        printf("%s\n", FinalOutput.c_str());
+    }
+    // logger_->info(std::forward<Args>(args)...);
+}
+
+template <typename... Args>
 void Logger::Info(Args&&... args)
 {
-    printf("%s\n", args...);
+    LogMessage(RR_LOG_LEVEL_INFO, std::forward<Args>(args)...);
     // logger_->info(std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 void Logger::Warn(Args&&... args)
 {
-    printf("%s\n", args...);
+    LogMessage(RR_LOG_LEVEL_WARN, std::forward<Args>(args)...);
     // logger_->warn(std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 void Logger::Error(Args&&... args)
 {
-    printf("%s\n", args...);
+    LogMessage(RR_LOG_LEVEL_ERROR, std::forward<Args>(args)...);
     // logger_->error(std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 void Logger::Debug(Args&&... args)
 {
-    printf("%s\n", args...);
+    LogMessage(RR_LOG_LEVEL_DEBUG, std::forward<Args>(args)...);
     // logger_->debug(std::forward<Args>(args)...);
 }
 
 template <typename... Args>
 void Logger::Trace(Args&&... args)
 {
-    printf("%s\n", args...);
+    LogMessage(RR_LOG_LEVEL_INFO, std::forward<Args>(args)...);
     // logger_->trace(std::forward<Args>(args)...);
 }
 

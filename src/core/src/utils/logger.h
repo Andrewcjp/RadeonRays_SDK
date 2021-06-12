@@ -61,7 +61,7 @@ public:
     template <typename... Args>
     void Trace(Args&&... args);
 
-    void SetLogLevel(RRLogLevel log_level) const;
+    void SetLogLevel(RRLogLevel log_level);
     void SetFileLogger(char const* filename);
     void SetConsoleLogger();
 
@@ -113,11 +113,16 @@ private:
     { /* spdlog::shutdown();*/
     }
     /*std::shared_ptr<spdlog::logger> logger_;*/
+    RRLogLevel m_Currentlog_level = RR_LOG_LEVEL_WARN;
 };
 
 template <typename... Args>
 void Logger::LogMessage(RRLogLevel level, Args&&... args)
 {
+    if (level < m_Currentlog_level)
+    {
+        return;
+	}
     std::string FinalOutput = string_format(args...);
     if (Logger::Get().m_LogCallback != nullptr)
     {        

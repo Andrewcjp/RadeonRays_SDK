@@ -9,7 +9,7 @@
 
 namespace rt
 {
-void Logger::SetLogLevel(RRLogLevel log_level) const
+void Logger::SetLogLevel(RRLogLevel log_level)
 {
     switch (log_level)
     {
@@ -31,6 +31,7 @@ void Logger::SetLogLevel(RRLogLevel log_level) const
     default:
         throw std::runtime_error("Incorrect log_level");
     }
+    m_Currentlog_level = log_level;
 }
 
 void Logger::SetFileLogger(char const* filename)

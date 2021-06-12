@@ -9,3 +9,10 @@ core/.DS_Store
 resources/
 src/core/src/vlk/kernels/*.comp.*
 src/core/src/vlk/compiled*spv.h
+.vs/
+bin/
+bvh_analyzer/bvh_analyzer.dir/
+CMakeFiles/
+lib/
+x64/
+test/

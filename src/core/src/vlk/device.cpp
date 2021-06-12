@@ -212,7 +212,7 @@ void Device::ReleaseCommandStream(CommandStreamBase* command_stream_base)
 
     // Release and clear temporary objects back to the pool
     command_stream->ClearTemporaryBuffers();
-    command_stream->Get().reset(vk::CommandBufferResetFlagBits::eReleaseResources);
+    //command_stream->Get().reset(vk::CommandBufferResetFlagBits::eReleaseResources);
 
     // Release command stream back to the pool.
     command_stream_pool_.ReleaseObject(command_stream);
